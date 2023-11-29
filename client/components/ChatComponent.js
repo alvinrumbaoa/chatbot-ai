@@ -16,7 +16,7 @@ const ChatComponent = () => {
     setConversation(updatedConversation);
 
     try {
-      const response = await axios.post('https://chatbot-ai-murex.vercel.app/api/chat', { messages: updatedConversation });
+      const response = await axios.post('/api/chat', { messages: updatedConversation });
       const aiResponse = response.data.result;
 
       setConversation([...updatedConversation, { role: 'assistant', content: aiResponse }]);
