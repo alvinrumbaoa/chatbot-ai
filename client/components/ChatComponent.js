@@ -1,77 +1,60 @@
 import axios from 'axios';
 import { useState } from 'react';
 
-const ChatComponent = () => {
-  const [userInput, setUserInput] = useState('');
-  const [conversation, setConversation] = useState([]);
+const TextToPromptLogoMaker = () => {
+  const [prompt, setPrompt] = useState('');
+  const [generatedLogos, setGeneratedLogos] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!userInput.trim()) {
-      console.log("User input is empty.");
-      return; // Do not send request if userInput is empty
+    if (!prompt.trim()) {
+      console.log("Prompt is empty.");
+      return; // Do not send request if prompt is empty
     }
 
-    const updatedConversation = [...conversation, { role: 'user', content: userInput }];
-    setConversation(updatedConversation);
-
     try {
-      const response = await axios.post('/api/chat', { messages: updatedConversation });
-      const aiResponse = response.data.result;
+      const response = await axios.post('/api/logo', { prompt });
+      const logoUrl = response.data.logoUrl;
 
-      setConversation([...updatedConversation, { role: 'assistant', content: aiResponse }]);
-      setUserInput('');
+      setGeneratedLogos([...generatedLogos, { prompt, logoUrl }]);
+      setPrompt('');
     } catch (error) {
-      console.error('Failed to fetch AI response:', error);
+      console.error('Failed to generate logo:', error);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto my-4">
-    <div className="bg-white rounded-lg shadow-md">
-      <div className="px-4 py-2 border-b border-gray-300 text-lg font-semibold">
-        Chat with Assistant
-      </div>
-      <div className="p-4 max-h-96 overflow-y-auto" style={{ minHeight: '300px' }}>
-        {conversation.map((msg, index) => (
-          <div
-            key={index}
-            className={`mb-2 ${
-              msg.role === 'user'
-                ? 'flex justify-end items-end'
-                : 'flex justify-start items-end'
-            }`}
+    <div className="max-w-lg mx-auto my-4">
+      <div className="bg-white rounded-lg shadow-md">
+        <div className="px-4 py-2 border-b border-gray-300 text-lg font-semibold">
+          Generate Logo from Prompt
+        </div>
+        <form onSubmit={handleSubmit} className="p-4 border-t border-gray-300">
+          <input
+            type="text"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Enter logo prompt..."
+            className="w-full p-2 border border-gray-300 rounded-full"
+          />
+          <button
+            type="submit"
+            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-full"
           >
-            <div
-              className={`${
-                msg.role === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-green-500 text-white'
-              } rounded-lg p-2 max-w-2/3`}
-            >
-              {msg.content}
+            Generate
+          </button>
+        </form>
+        <div className="p-4">
+          {generatedLogos.map((item, index) => (
+            <div key={index} className="my-4">
+              <p className="text-sm mb-2">{item.prompt}</p>
+              <img src={item.logoUrl} alt={`Logo for ${item.prompt}`} className="w-64 h-64 object-contain" />
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-300">
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Type a message..."
-          className="w-full p-2 border border-gray-300 rounded-full"
-        />
-        <button
-          type="submit"
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-full"
-        >
-          Send
-        </button>
-      </form>
     </div>
-  </div>
   );
 };
 
-export default ChatComponent;
+export default TextToPromptLogoMaker;
